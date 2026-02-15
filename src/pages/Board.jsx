@@ -12,7 +12,7 @@ import ExportModal from '../components/ExportModal';
 import TaskTemplates from '../components/TaskTemplates';
 import AdvancedFilters from '../components/AdvancedFilters';
 import Analytics from '../components/Analytics';
-import { Plus, Search, LogOut, RotateCcw, Menu, X, BarChart3, Download, Moon, Sun, XCircle, FileText, Filter, Sparkles } from 'lucide-react';
+import { Plus, Search, LogOut, RotateCcw, Menu, X, BarChart3, Download, Moon, Sun, XCircle, FileText, Filter, Sparkles, User, ChevronDown } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -41,6 +41,7 @@ const Board = () => {
   const [showTemplates, setShowTemplates] = useState(false);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   useEffect(() => {
     setTasks(storage.getTasks());
@@ -115,6 +116,8 @@ const Board = () => {
   const handleDragEnd = (result) => {
     if (!result.destination) return;
     const { source, destination, draggableId } = result;
+    
+    // Prevent drag within same column
     if (source.droppableId === destination.droppableId) return;
 
     const taskId = parseInt(draggableId);
@@ -253,43 +256,51 @@ const Board = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 shadow-sm">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 shadow-sm backdrop-blur-lg bg-white/95 dark:bg-gray-800/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">TB</span>
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white">Task Board</h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{user?.email}</p>
-              </div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent">Task Board</h1>
             </div>
             
             <div className="hidden md:flex items-center gap-2">
-              <button onClick={() => setShowTemplates(true)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Templates">
-                <Sparkles className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <button onClick={() => setShowTemplates(true)} className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
+                Templates
               </button>
-              <button onClick={() => setShowAdvancedFilters(true)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Advanced Filters">
-                <Filter className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <button onClick={toggleTheme} className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
+                {isDark ? 'Light' : 'Dark'}
               </button>
-              <button onClick={() => setShowAnalytics(!showAnalytics)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Analytics">
-                <BarChart3 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <button onClick={() => setShowAnalytics(!showAnalytics)} className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
+                Analytics
               </button>
-              <button onClick={toggleTheme} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                {isDark ? <Sun className="w-5 h-5 text-gray-400" /> : <Moon className="w-5 h-5 text-gray-600" />}
+              <button onClick={() => setShowExportModal(true)} className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
+                Export
               </button>
-              <button onClick={() => setShowExportModal(true)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                <Download className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <button onClick={handleResetBoard} className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
+                Reset
               </button>
-              <button onClick={handleResetBoard} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                <RotateCcw className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-              </button>
-              <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-2"></div>
-              <button onClick={logout} className="flex items-center gap-2 px-4 py-2 bg-cyan-600 text-white hover:bg-cyan-700 rounded-lg transition-colors text-sm font-medium">
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
+              <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+              <div className="relative">
+                <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                  <div className="w-7 h-7 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    {user?.email?.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{user?.email}</span>
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                </button>
+                {showProfileMenu && (
+                  <div className="absolute right-0 top-12 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl py-2 z-10 min-w-[200px] animate-scale-in">
+                    <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Signed in as</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user?.email}</p>
+                    </div>
+                    <button onClick={() => { logout(); setShowProfileMenu(false); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <button onClick={() => setShowMobileMenu(!showMobileMenu)} className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
@@ -299,20 +310,27 @@ const Board = () => {
 
           {showMobileMenu && (
             <div className="md:hidden pb-3 space-y-1">
-              <button onClick={() => { toggleTheme(); setShowMobileMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />} Theme
+              <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700 mb-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400">Signed in as</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.email}</p>
+              </div>
+              <button onClick={() => { setShowTemplates(true); setShowMobileMenu(false); }} className="w-full text-left px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                Templates
               </button>
-              <button onClick={() => { setShowExportModal(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                <Download className="w-4 h-4" /> Export
+              <button onClick={() => { toggleTheme(); setShowMobileMenu(false); }} className="w-full text-left px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                {isDark ? 'Light Mode' : 'Dark Mode'}
               </button>
-              <button onClick={() => { setShowActivityLog(!showActivityLog); setShowMobileMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                <BarChart3 className="w-4 h-4" /> Activity
+              <button onClick={() => { setShowAnalytics(!showAnalytics); setShowMobileMenu(false); }} className="w-full text-left px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                Analytics
               </button>
-              <button onClick={() => { handleResetBoard(); setShowMobileMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-                <RotateCcw className="w-4 h-4" /> Reset
+              <button onClick={() => { setShowExportModal(true); setShowMobileMenu(false); }} className="w-full text-left px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                Export
               </button>
-              <button onClick={logout} className="w-full flex items-center gap-2 px-3 py-2 text-sm bg-cyan-600 text-white hover:bg-cyan-700 rounded-lg">
-                <LogOut className="w-4 h-4" /> Logout
+              <button onClick={() => { handleResetBoard(); setShowMobileMenu(false); }} className="w-full text-left px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                Reset Board
+              </button>
+              <button onClick={logout} className="w-full text-left px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
+                Logout
               </button>
             </div>
           )}
@@ -321,53 +339,76 @@ const Board = () => {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        {/* Empty State */}
+        {tasks.length === 0 && (
+          <div className="bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl border-2 border-dashed border-cyan-300 dark:border-cyan-700 p-12 text-center mb-6">
+            <div className="max-w-md mx-auto">
+              <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Plus className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome to Task Board!</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">Get started by creating your first task or use a pre-built template</p>
+              <div className="flex gap-3 justify-center">
+                <button onClick={() => openModal('todo')} className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl hover:from-cyan-700 hover:to-teal-700 font-medium shadow-lg hover:shadow-xl transition-all">
+                  <Plus className="w-5 h-5" />
+                  Create Task
+                </button>
+                <button onClick={() => setShowTemplates(true)} className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-all">
+                  <FileText className="w-5 h-5" />
+                  Use Template
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Total</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 hover:border-cyan-400 dark:hover:border-cyan-600">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Total Tasks</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Progress</p>
-            <p className="text-2xl font-bold text-cyan-600">{stats.inProgress}</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 hover:border-cyan-400 dark:hover:border-cyan-600">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">In Progress</p>
+            <p className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-cyan-500 bg-clip-text text-transparent">{stats.inProgress}</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Done</p>
-            <p className="text-2xl font-bold text-teal-600">{stats.completed}</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 hover:border-teal-400 dark:hover:border-teal-600">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Completed</p>
+            <p className="text-3xl font-bold bg-gradient-to-r from-teal-600 to-teal-500 bg-clip-text text-transparent">{stats.completed}</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Rate</p>
-            <p className="text-2xl font-bold text-cyan-600">{stats.completionRate}%</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 hover:border-cyan-400 dark:hover:border-cyan-600">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Success Rate</p>
+            <p className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent">{stats.completionRate}%</p>
           </div>
         </div>
 
         {/* Search */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 mb-6 shadow-sm">
           <div className="flex gap-3">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search tasks..."
+                placeholder="Search tasks by title, description, or tags..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white dark:bg-gray-700 dark:text-white"
+                className="w-full pl-12 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 bg-white dark:bg-gray-700 dark:text-white transition-all"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <XCircle className="w-4 h-4 text-gray-400" />
+                <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 hover:bg-gray-100 dark:hover:bg-gray-600 p-1 rounded-lg transition-colors">
+                  <XCircle className="w-5 h-5 text-gray-400" />
                 </button>
               )}
             </div>
             <select
               value={filterPriority}
               onChange={(e) => setFilterPriority(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-white"
+              className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-700 dark:text-white font-medium transition-all focus:outline-none focus:ring-2 focus:ring-cyan-500"
             >
-              <option value="all">All</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
+              <option value="all">All Priorities</option>
+              <option value="low">Low Priority</option>
+              <option value="medium">Medium Priority</option>
+              <option value="high">High Priority</option>
             </select>
           </div>
         </div>
@@ -378,16 +419,16 @@ const Board = () => {
             <DragDropContext onDragEnd={handleDragEnd}>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Object.values(COLUMNS).map((column) => (
-                  <div key={column.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                  <div key={column.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-all">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${column.color}`}></div>
-                        <h2 className="font-semibold text-gray-900 dark:text-white text-sm">{column.title}</h2>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">
+                        <div className={`w-3 h-3 rounded-full ${column.color} shadow-lg`}></div>
+                        <h2 className="font-bold text-gray-900 dark:text-white text-base">{column.title}</h2>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2.5 py-1 rounded-full font-semibold">
                           {getFilteredAndSortedTasks(column.id).length}
                         </span>
                       </div>
-                      <button onClick={() => openModal(column.id)} className="p-1.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg">
+                      <button onClick={() => openModal(column.id)} className="p-2 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white rounded-xl shadow-md hover:shadow-lg transition-all">
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
@@ -397,8 +438,8 @@ const Board = () => {
                         <div
                           ref={provided.innerRef}
                           {...provided.droppableProps}
-                          className={`space-y-3 min-h-[500px] p-2 rounded-lg transition-all ${
-                            snapshot.isDraggingOver ? 'bg-cyan-50 dark:bg-cyan-900/20' : 'bg-gray-50 dark:bg-gray-900/50'
+                          className={`space-y-3 min-h-[500px] p-3 rounded-xl transition-all ${
+                            snapshot.isDraggingOver ? 'bg-cyan-50 dark:bg-cyan-900/20 border-2 border-dashed border-cyan-400 dark:border-cyan-600' : 'bg-gray-50 dark:bg-gray-900/50'
                           }`}
                         >
                           {getFilteredAndSortedTasks(column.id).map((task, index) => (
@@ -417,9 +458,12 @@ const Board = () => {
                           ))}
                           {provided.placeholder}
                           {getFilteredAndSortedTasks(column.id).length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-12">
-                              <Plus className="w-8 h-8 text-gray-400 mb-2" />
-                              <p className="text-gray-400 text-sm">No tasks</p>
+                            <div className="flex flex-col items-center justify-center py-16">
+                              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
+                                <Plus className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                              </div>
+                              <p className="text-gray-400 dark:text-gray-500 text-sm font-medium">No tasks yet</p>
+                              <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Click + to add one</p>
                             </div>
                           )}
                         </div>
