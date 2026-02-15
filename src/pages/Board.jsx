@@ -87,9 +87,9 @@ const Board = () => {
   };
 
   const handleSelectTemplate = (templateTasks) => {
-    const newTasks = templateTasks.map(t => ({
+    const newTasks = templateTasks.map((t, index) => ({
       ...t,
-      id: Date.now() + Math.random(),
+      id: Date.now() + index,
       status: 'todo',
       createdAt: new Date().toISOString()
     }));
